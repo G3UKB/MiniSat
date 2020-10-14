@@ -271,7 +271,7 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("%sm" % calibration)
+        r = self.__doCommand("%sa" % calibration)
         self.__lock.release()
         return r
     
@@ -286,7 +286,7 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("%sn" % calibration)
+        r = self.__doCommand("%sb" % calibration)
         self.__lock.release()
         return r
     

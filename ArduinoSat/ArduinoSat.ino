@@ -146,8 +146,8 @@ void execute(char *command) {
   * Elevation speed           - "[nnn]m   - set elevation speed
   * Calibrate azimuth         - "calaz"   - run azimuth calibration
   * Calibrate elevation       - "calel"   - run elevation calibration
-  * Set calibration azimuth   - "[nnn]m"  - set calibration value for azimuth
-  * Set calibration elevation - "[nnn]n"  - set calibration value for elevation
+  * Set calibration azimuth   - "[nnn]a"  - set calibration value for azimuth
+  * Set calibration elevation - "[nnn]b"  - set calibration value for elevation
   * Position azimuth          - "[nnn]z   - Run to a new azimuth position
   * Position elevation        - "[nnn]e"  - Run to a new elevation position
   * Home azimuth              - "homeaz"  - Go to home position, 0 degrees azimuth
@@ -160,7 +160,7 @@ void execute(char *command) {
   char *p;
   int value = 0;
   int cal;
- 
+
   // Assume success
   strcpy(reply_buffer, "ack");
   if (strcmp(command, "poll") == 0) {
@@ -215,11 +215,11 @@ void execute(char *command) {
         __el_motor->set_speed(value);
         __el_motor->set_backoff_speed(value);
         break;
-      } else if(*p == 'm') {
+      } else if(*p == 'a') {
         // Instructed to set azimuth calibration
         __az_motor->set_cal(value);
         break;
-      } else if(*p == 'n') {
+      } else if(*p == 'b') {
         // Instructed to set elevation calibration
         __el_motor->set_cal(value);
         break;

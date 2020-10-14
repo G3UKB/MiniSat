@@ -612,10 +612,8 @@ Azimuth and Elevation Controller
     
     def __onCalibrate(self):
         """ Run azimuth and elevation calibration """
-        self.__msgq.append('Calibrating azimuth motor... please wait!')
-        self.__cmdq.append(("calibrateAz", []))
-        self.__msgq.append('Calibrating elevation motor... please wait!')
-        self.__cmdq.append(("calibrateEl", []))
+        self.__msgq.append('Calibrating motors... please wait!')
+        self.__cmdq.append(("coldstart", []))
     
     def __onHome(self):
         """ Go to home """
@@ -996,21 +994,21 @@ Azimuth and Elevation Controller
                         self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
                     else:
                         msg = QMessageBox()
+                        msg.setWindowTitle("Action")
                         msg.setIcon(QMessageBox.Information)
                         msg.setText("Calibration required!")
                         msg.setInformativeText("The controller cannot fully start without calibration data.")
-                        msg.setWindowTitle("Action required")
                         msg.setDetailedText(
 """
 Please click the calibration button to perform a full calibration.
-For initial testing use the nudge buttons to verify operation of the motors in the correct direction and the corresponding limit switches.
-Manually operate the forward and reverse limit switches to prevent movement.
+For initial testing use the nudge buttons to verify operation of the motors in the correct direction and the corresponding limit switches. Manually operate the forward and reverse limit switches to prevent movement.
 """
                         )
                         msg.setStandardButtons(QMessageBox.Ok)
                         msg.exec_()
                         self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
                         self.__state = CAL_MANUAL
+                        self.__msgq.append('Waiting for manual calibration...')
             elif self.__state == STARTING_CAL:
                 self.__msgq.append('Starting calibration...')
                 self.calInd.setStyleSheet('background-color: rgb(199,94,44)')
@@ -1027,8 +1025,8 @@ Manually operate the forward and reverse limit switches to prevent movement.
                 self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
                 self.calInd.setStyleSheet('background-color: red')
             elif self.__state == CAL_MANUAL:
-                if self.__lastState != CAL_MANUAL:
-                    self.__msgq.append('Waiting for manual calibration...')
+                # Wait state for manual calibration  
+                pass 
             else:
                 self.__msgq.append('Invalid state %d!' % self.__state)
             if self.__state == OFFLINE or self.__state == PENDING:
