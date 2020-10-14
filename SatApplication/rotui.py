@@ -176,10 +176,10 @@ class RotUI(QMainWindow):
         self.setToolTip('Rotator Control')
         
         # Arrange window
-        self.setGeometry(self.__config["Window"]["X"],
-                         self.__config["Window"]["Y"],
-                         self.__config["Window"]["W"],
-                         self.__config["Window"]["H"])
+        self.setGeometry(defs.config["Window"]["X"],
+                         defs.config["Window"]["Y"],
+                         defs.config["Window"]["W"],
+                         defs.config["Window"]["H"])
                          
         self.setWindowTitle('MiniSat Control')
         
@@ -371,7 +371,7 @@ class RotUI(QMainWindow):
     #=======================================================
     def __popRotator(self, rotgrid, nudgegrid, trackgrid):
         # Calibration
-        self.calibratebtn = QPushButton('Re-calibrate')
+        self.calibratebtn = QPushButton('(re)Calibrate')
         rotgrid.addWidget(self.calibratebtn, 0, 0, 1, 2)
         self.calibratebtn.clicked.connect(self.__onCalibrate)
         
@@ -880,7 +880,7 @@ Azimuth and Elevation Controller
         # If we are in manual allow manual controls    
         elif self.__state == CAL_MANUAL:
             self.calibratebtn.setEnabled(True)
-            self.homebtn.setEnabled(True)
+            self.homebtn.setEnabled(False)
             self.nudgefwdrb.setEnabled(True)
             self.nudgerevrb.setEnabled(True)
             self.nudgeazbtn.setEnabled(True)
@@ -1003,11 +1003,13 @@ Azimuth and Elevation Controller
                         msg.setDetailedText(
 """
 Please click the calibration button to perform a full calibration.
-For initial testing use the nudge buttons to verify operation of the
-motors in the correct direction and the corresponding limit switches.
-manually operate the forward and reverse limit switches to prevent movement.
+For initial testing use the nudge buttons to verify operation of the motors in the correct direction and the corresponding limit switches.
+Manually operate the forward and reverse limit switches to prevent movement.
 """
                         )
+                        msg.setStandardButtons(QMessageBox.Ok)
+                        msg.exec_()
+                        self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
                         self.__state = CAL_MANUAL
             elif self.__state == STARTING_CAL:
                 self.__msgq.append('Starting calibration...')
@@ -1024,6 +1026,9 @@ manually operate the forward and reverse limit switches to prevent movement.
                 self.__state = OFFLINE
                 self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
                 self.calInd.setStyleSheet('background-color: red')
+            elif self.__state == CAL_MANUAL:
+                if self.__lastState != CAL_MANUAL:
+                    self.__msgq.append('Waiting for manual calibration...')
             else:
                 self.__msgq.append('Invalid state %d!' % self.__state)
             if self.__state == OFFLINE or self.__state == PENDING:

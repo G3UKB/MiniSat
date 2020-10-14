@@ -330,7 +330,7 @@ class RotIf(threading.Thread):
         self.__cmdsock.settimeout(defs.CAL_TIMEOUT)
         r, d = self.__doCommand("calaz")
         self.__lock.release()
-        if not r or d == -1:
+        if not r or d == 'nak':
             return False
         else:
             self.__degaz = 0
@@ -349,7 +349,7 @@ class RotIf(threading.Thread):
         self.__cmdsock.settimeout(defs.CAL_TIMEOUT)
         r, d = self.__doCommand("calel")
         self.__lock.release()
-        if not r or d == -1:
+        if not r or d == 'nak':
             return False
         else:
             self.__degel = 0
