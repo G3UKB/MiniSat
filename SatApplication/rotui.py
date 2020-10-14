@@ -250,17 +250,26 @@ class RotUI(QMainWindow):
         
         #=======================================================
         # Within the rotator grid add a second grid to hold
+        # the nudge controls
+        self.__nudgeGrid = QGridLayout()
+        box4 = QFrame()
+        box4.setLayout(self.__nudgeGrid)
+        # Add nudge grid to rotator grid
+        # Occupies row 1 and 5 cols
+        self.__rotGrid.addWidget(box4, 1, 0, 1, 5)
+        
+        # Add another grid tgo hold the tracking controls
         # the tracking widgets so they can be spaces properly
         self.__trackGrid = QGridLayout()
-        box4 = QFrame()
-        box4.setLayout(self.__trackGrid)
+        box5 = QFrame()
+        box5.setLayout(self.__trackGrid)
         # Add track grid to rotator grid
-        # Occupies row 3 and 2 cols
-        self.__rotGrid.addWidget(box4, 2, 0, 1, 5)
+        # Occupies row 2 and 5 cols
+        self.__rotGrid.addWidget(box5, 2, 0, 1, 5)
         
         #=======================================================
         # Populate the rotator grid
-        self.__popRotator(self.__rotGrid, self.__trackGrid)
+        self.__popRotator(self.__rotGrid, self.__nudgeGrid, self.__trackGrid)
         
         #=======================================================
         # Within the interactor grid add a second grid to hold
@@ -360,7 +369,7 @@ class RotUI(QMainWindow):
     #=======================================================
     # Populate Rotator grid
     #=======================================================
-    def __popRotator(self, rotgrid, trackgrid):
+    def __popRotator(self, rotgrid, nudgegrid, trackgrid):
         # Calibration
         self.calibratebtn = QPushButton('Re-calibrate')
         rotgrid.addWidget(self.calibratebtn, 0, 0, 1, 2)
@@ -371,11 +380,23 @@ class RotUI(QMainWindow):
         rotgrid.addWidget(self.homebtn, 0, 3, 1, 2)
         self.homebtn.clicked.connect(self.__onHome)
         
-        # Emergency Stop
-        self.estopbtn = QPushButton('Emergency Stop')
-        rotgrid.addWidget(self.estopbtn, 1, 0, 1, 5)
-        self.estopbtn.clicked.connect(self.__onStop)
-        self.estopbtn.setStyleSheet("color: red; font: 14px")
+        # Nudge
+        nudgefwdlabel = QLabel('Fwd')
+        nudgegrid.addWidget(nudgefwdlabel, 0, 0)
+        self.nudgefwdrb = QRadioButton('')
+        nudgegrid.addWidget(self.nudgefwdrb, 0, 1)
+        nudgerevlabel = QLabel('Rev')
+        nudgegrid.addWidget(nudgerevlabel, 0, 2)
+        self.nudgerevrb = QRadioButton('')
+        nudgegrid.addWidget(self.nudgerevrb, 0, 3)
+        
+        self.nudgeazbtn = QPushButton('Nudge Az')
+        nudgegrid.addWidget(self.nudgeazbtn, 0, 4)
+        self.nudgeazbtn.clicked.connect(self.__onNudgeAz)
+        #self.nudgeazbtn.setStyleSheet("color: red; font: 14px")
+        self.nudgeelbtn = QPushButton('Nudge El')
+        nudgegrid.addWidget(self.nudgeelbtn, 0, 5)
+        self.nudgeelbtn.clicked.connect(self.__onNudgeEl)
         
         # Tracking
         trackinglabel = QLabel('Track Satelite')
@@ -601,10 +622,14 @@ Azimuth and Elevation Controller
         self.__cmdq.append(("homeAz", []))
         self.__cmdq.append(("homeEl", []))
     
-    def __onStop(self):
-        """ Emergency Stop """
-        self.__cmdq.append(("estop", []))
-                   
+    def __onNudgeAz(self):
+        """ Move Az forward a tad """
+        self.__cmdq.append(("nudgeaz", []))
+    
+    def __onNudgeEl(self):
+        """ Move El forward a tad  """
+        self.__cmdq.append(("nudgeel", []))
+
     def __onAzimuth(self):
         """ Move to new azimuth """
         try:
@@ -861,6 +886,10 @@ Azimuth and Elevation Controller
         if self.rottrackcb.isChecked():
             self.calibratebtn.setEnabled(False)
             self.homebtn.setEnabled(False)
+            self.nudgefwdrb.setEnabled(False)
+            self.nudgerevrb.setEnabled(False)
+            self.nudgeazbtn.setEnabled(False)
+            self.nudgeelbtn.setEnabled(False)
             self.estopbtn.setEnabled(True)
             self.azimuthtxt.setEnabled(False)
             self.azimuthbtn.setEnabled(False)
@@ -907,7 +936,10 @@ Azimuth and Elevation Controller
          
         self.calibratebtn.setEnabled(state)
         self.homebtn.setEnabled(state)
-        self.estopbtn.setEnabled(state)
+        self.nudgefwdrb.setEnabled(state)
+        self.nudgerevrb.setEnabled(state)
+        self.nudgeazbtn.setEnabled(state)
+        self.nudgeelbtn.setEnabled(state)
         self.azimuthtxt.setEnabled(state)
         self.azimuthbtn.setEnabled(state)
         self.elevationtxt.setEnabled(state)

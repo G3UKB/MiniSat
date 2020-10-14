@@ -38,4 +38,4 @@ from collections import deque
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen, QFont
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import QFrame, QGroupBox, QMessageBox, QLabel, QLineEdit, QTextEdit, QComboBox, QPushButton, QCheckBox, QSpinBox, QAction, QWidget, QGridLayout
+from PyQt5.QtWidgets import QFrame, QGroupBox, QMessageBox, QLabel, QLineEdit, QTextEdit, QComboBox, QPushButton, QCheckBox, QRadioButton, QSpinBox, QAction, QWidget, QGridLayout

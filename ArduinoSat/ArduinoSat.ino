@@ -152,7 +152,10 @@ void execute(char *command) {
   * Position elevation        - "[nnn]e"  - Run to a new elevation position
   * Home azimuth              - "homeaz"  - Go to home position, 0 degrees azimuth
   * Home elevation            - "homeel"  - Go to home position, 0 degrees elevation
-  * Emergency stop            - "estop"   - Stop motors immediately
+  * Nudge azimuth fwd         - "ngazfwd" - Nudge az fwd a tad unless fwd limit
+  * Nudge azimuth rev         - "ngazrev" - Nudge az rev a tad unless rev limit
+  * Nudge elevation fwd       - "ngelfwd" - Nudge el fwd a tad unless fwd limit
+  * Nudge elevation fwd       - "ngelfwd" - Nudge el fwd a tad unless rev limit
   */ 
   char *p;
   int value = 0;
@@ -184,11 +187,18 @@ void execute(char *command) {
     // Move to 0 deg elevation
     if (!__el_motor->move_to_home())
       strcpy(reply_buffer, "nak");
-  } else if (strcmp(command, "estop") == 0) {
-    // Emergency - stop motors
-    __az_motor->emergency_stop();
-    __el_motor->emergency_stop();
-    strcpy(reply_buffer, "nak");
+  } else if (strcmp(command, "ngazfwd") == 0) {
+    // Nudge Az fwd
+    __az_motor->nudge_fwd();
+  } else if (strcmp(command, "ngazrev") == 0) {
+    // Nudge Az rev
+    __az_motor->nudge_rev();
+  } else if (strcmp(command, "ngelfwd") == 0) {
+    // Nudge El fwd
+    __el_motor->nudge_fwd();
+  } else if (strcmp(command, "ngelrev") == 0) {
+    // Nudge El rev
+    __el_motor->nudge_rev();
   } else {
     // A speed, cal or position command?
     for(p=command; *p; p++) {
