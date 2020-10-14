@@ -61,11 +61,12 @@ OFFLINE = 1
 PENDING = 2
 STARTING_CAL = 3
 CAL_FAILED = 4
+CAL_MANUAL = 5
 
 # CAT, Sat and Rig interface connection status to sat program
 # When the sat or rig interface is enabled we wait for a connection from gpredict
-FAILED = 5
-WAITING = 6
+FAILED = 6
+WAITING = 7
 
 # RX/TX mode
 RX = 0

@@ -63,9 +63,9 @@ class RotUI(QMainWindow):
         
         # Get system configuration
         # This is a pickled file so non-editable
-        self.__config = persist.getSavedCfg(CONFIG_PATH)
-        if self.__config == None:
-            self.__config = defs.config
+        config = persist.getSavedCfg(CONFIG_PATH)
+        if config != None:
+            defs.config = config
         
         # The application
         self.__qt_app = qt_app
@@ -154,7 +154,7 @@ class RotUI(QMainWindow):
         """ Run the application """
         
         # Create and start the rotator interfaces
-        self.__rotif = rotif.RotIf(self.__config, self.__rotState, self.__rotEvents, self.__cmdq, self.__msgq)
+        self.__rotif = rotif.RotIf(self.__rotState, self.__rotEvents, self.__cmdq, self.__msgq)
         self.__rotif.start()
         
         # Start idle processing
@@ -624,11 +624,17 @@ Azimuth and Elevation Controller
     
     def __onNudgeAz(self):
         """ Move Az forward a tad """
-        self.__cmdq.append(("nudgeaz", []))
+        if self.nudgefwdrb.isChecked():
+            self.__cmdq.append(("nudgeazfwd", []))
+        else:
+            self.__cmdq.append(("nudgeazrev", []))
     
     def __onNudgeEl(self):
         """ Move El forward a tad  """
-        self.__cmdq.append(("nudgeel", []))
+        if self.nudgefwdrb.isChecked():
+            self.__cmdq.append(("nudgeelfwd", []))
+        else:
+            self.__cmdq.append(("nudgeelrev", []))
 
     def __onAzimuth(self):
         """ Move to new azimuth """
@@ -864,20 +870,29 @@ Azimuth and Elevation Controller
         # Exit is always enabled.
         self.quitbtn.setEnabled(True)
         #
+        # If the controller is on-line then -
+        #   All Rotator Control is enabled.
+        #   All Rig Control is enabled.
+        if self.__state == ONLINE:
+            self.__rotatorContext(ENABLE)
+            self.__rigContext(ENABLE)
+        #
+        # If we are in manual allow manual controls    
+        elif self.__state == CAL_MANUAL:
+            self.calibratebtn.setEnabled(True)
+            self.homebtn.setEnabled(True)
+            self.nudgefwdrb.setEnabled(True)
+            self.nudgerevrb.setEnabled(True)
+            self.nudgeazbtn.setEnabled(True)
+            self.nudgeelbtn.setEnabled(True)
+        #
         # If the controller is off-line then -
         #   All Rotator Control is disabled except track so we can test tracking.
         #   All Rig control is enabled, even tracking,
         #   although the antenna obviously won't follow.
-        if not self.__state == ONLINE:
+        else:
             self.__rotatorContext(DISABLE)
             self.rottrackcb.setEnabled(True)
-            self.__rigContext(ENABLE)
-        #
-        # If the controller is on-line then -
-        #   All Rotator Control is enabled.
-        #   All Rig Control is enabled.
-        else:
-            self.__rotatorContext(ENABLE)
             self.__rigContext(ENABLE)
         #
         # Sub context -
@@ -890,7 +905,6 @@ Azimuth and Elevation Controller
             self.nudgerevrb.setEnabled(False)
             self.nudgeazbtn.setEnabled(False)
             self.nudgeelbtn.setEnabled(False)
-            self.estopbtn.setEnabled(True)
             self.azimuthtxt.setEnabled(False)
             self.azimuthbtn.setEnabled(False)
             self.elevationtxt.setEnabled(False)
@@ -975,10 +989,26 @@ Azimuth and Elevation Controller
                     self.__msgq.append('Controller has gone offline!')
             elif self.__state == PENDING:
                 if self.__lastState != PENDING:
-                    # Poll success so try a coldstart
-                    self.__cmdq.append(("coldstart", []))
-                    self.__msgq.append('Controller is online pending a coldstart')
-                    self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
+                    # Poll success so try a coldstart if we have calibration data
+                    if ("AZ" in defs.config["Calibration"]) and ("EL" in defs.config["Calibration"]):
+                        self.__cmdq.append(("coldstart", []))
+                        self.__msgq.append('Controller is online pending a coldstart')
+                        self.contInd.setStyleSheet('background-color: rgb(199,94,44)')
+                    else:
+                        msg = QMessageBox()
+                        msg.setIcon(QMessageBox.Information)
+                        msg.setText("Calibration required!")
+                        msg.setInformativeText("The controller cannot fully start without calibration data.")
+                        msg.setWindowTitle("Action required")
+                        msg.setDetailedText(
+"""
+Please click the calibration button to perform a full calibration.
+For initial testing use the nudge buttons to verify operation of the
+motors in the correct direction and the corresponding limit switches.
+manually operate the forward and reverse limit switches to prevent movement.
+"""
+                        )
+                        self.__state = CAL_MANUAL
             elif self.__state == STARTING_CAL:
                 self.__msgq.append('Starting calibration...')
                 self.calInd.setStyleSheet('background-color: rgb(199,94,44)')

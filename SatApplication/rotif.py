@@ -36,12 +36,11 @@ import persist
 """
 class RotIf(threading.Thread):
     
-    def __init__(self, config, state_callback, pos_callback, cmdq, msgq):
+    def __init__(self, state_callback, pos_callback, cmdq, msgq):
         """
         Constructor
         
         Arguments:
-            config          -- current configuration
             state_callback  -- startup states
             pos_callback    -- callback for position events
             cmdq            --  add commands for execution here
@@ -53,9 +52,6 @@ class RotIf(threading.Thread):
         self.__pos_callback = pos_callback
         self.__cmdq = cmdq
         self.__msgq = msgq
-        
-        # Get saved config
-        self.__config = config
         
         # Create a socket for the command channel
         # This is command/response channel
@@ -91,7 +87,10 @@ class RotIf(threading.Thread):
             "homeEl": self.homeEl,
             "setPosAz": self.setPosAz,
             "setPosEl": self.setPosEl,
-            "estop": self.emergencyStop,
+            "nudgeazfwd": self.nudgeAzFwd,
+            "nudgeazrev": self.nudgeAzRev,
+            "nudgeelfwd": self.nudgeElFwd,
+            "nudgeelrev": self.nudgeElRev,
         }
         # Current status
         self.__status = OFFLINE
@@ -161,7 +160,7 @@ class RotIf(threading.Thread):
             self.__state_callback(CAL_FAILED)
             self.__status = CAL_FAILED
             return False
-        if (not "AZ" in self.__config["Calibration"]) or (not "EL" in self.__config["Calibration"]):
+        if ("AZ" not in defs.config["Calibration"]) or ("EL" not in defs.config["Calibration"]):
             # Perform a calibration
             # Calibrate AZ motor
             if not self.calibrateAz():
@@ -177,18 +176,19 @@ class RotIf(threading.Thread):
                 return False
         else:
             # Set saved calibration
-            r, d = self.setCalAz(self.__config["Calibration"]["AZ"])
+            r, d = self.setCalAz(defs.config["Calibration"]["AZ"])
             if not r or d == 'nak':
                 self.__state_callback(CAL_FAILED)
                 self.__status = CAL_FAILED
                 return False
-            r, d = self.setCalEl(self.__config["Calibration"]["EL"])
+            r, d = self.setCalEl(defs.config["Calibration"]["EL"])
             if not r or d == 'nak':
                 self.__state_callback(CAL_FAILED)
                 self.__status = CAL_FAILED
                 return False
             
             # Move to home position
+            """
             r, d = self.homeAz()
             if not r or d == 'nak':
                 self.__state_callback(CAL_FAILED)
@@ -199,7 +199,8 @@ class RotIf(threading.Thread):
                 self.__state_callback(CAL_FAILED)
                 self.__status = CAL_FAILED
                 return False
-                
+            """
+            
         self.__state_callback(ONLINE)
         self.__status = ONLINE
         return True
@@ -425,9 +426,9 @@ class RotIf(threading.Thread):
         self.__lock.release()
         return r
 
-    def emergencyStop(self, params):
+    def nudgeAzFwd(self):
         """
-        Problem - stop all
+        Nudge AZ forward a tad
         
         Arguments:
             
@@ -435,7 +436,49 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("estop" )
+        r = self.__doCommand("ngazfwd" )
+        self.__lock.release()
+        return r
+    
+    def nudgeAzRev(self):
+        """
+        Nudge AZ reverse a tad
+        
+        Arguments:
+            
+        """
+        if self.__status == OFFLINE: return True, 'ack'
+        self.__lock.acquire()
+        self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
+        r = self.__doCommand("ngazrev" )
+        self.__lock.release()
+        return r
+    
+    def nudgeElFwd(self):
+        """
+        Nudge EL forward a tad
+        
+        Arguments:
+            
+        """
+        if self.__status == OFFLINE: return True, 'ack'
+        self.__lock.acquire()
+        self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
+        r = self.__doCommand("ngelfwd" )
+        self.__lock.release()
+        return r
+    
+    def nudgeElRev(self):
+        """
+        Nudge EL reverse a tad
+        
+        Arguments:
+            
+        """
+        if self.__status == OFFLINE: return True, 'ack'
+        self.__lock.acquire()
+        self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
+        r = self.__doCommand("ngelrev" )
         self.__lock.release()
         return r
     

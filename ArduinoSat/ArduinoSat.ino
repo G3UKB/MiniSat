@@ -155,7 +155,7 @@ void execute(char *command) {
   * Nudge azimuth fwd         - "ngazfwd" - Nudge az fwd a tad unless fwd limit
   * Nudge azimuth rev         - "ngazrev" - Nudge az rev a tad unless rev limit
   * Nudge elevation fwd       - "ngelfwd" - Nudge el fwd a tad unless fwd limit
-  * Nudge elevation fwd       - "ngelfwd" - Nudge el fwd a tad unless rev limit
+  * Nudge elevation rev       - "ngelrev" - Nudge el rev a tad unless rev limit
   */ 
   char *p;
   int value = 0;
