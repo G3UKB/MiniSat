@@ -244,6 +244,15 @@ class RotIf(threading.Thread):
             q.append('%f\n%f\n' % (float(az), float(el)))
         return True
     
+    def isPos(self):
+        """
+        Return True if the position is known
+        """
+        
+        if self.__degaz == -1 or self.__degel == -1:
+            return False
+        return True
+        
     def setCalAz(self, calibration):
         """
         Set motor calibration for azimuth motor to stored value

@@ -819,6 +819,8 @@ Azimuth and Elevation Controller
             t = self.__msgq.popleft()
             if "error" in t.lower():
                 self.logOutput.setTextColor(QColor("red"))
+            elif "info" in t.lower():
+                self.logOutput.setTextColor(QColor("green"))
             else:
                 self.logOutput.setTextColor(QColor("black"))
             self.logOutput.append(t)
@@ -1023,6 +1025,8 @@ For initial testing use the nudge buttons to verify operation of the motors in t
                     self.__msgq.append('Calibration successful, controller online.')
                     self.contInd.setStyleSheet('background-color: green')
                     self.calInd.setStyleSheet('background-color: green')
+                    if  not self.__rotif.isPos():
+                       self.__msgq.append('Info - position is unknown use Home or a Move command')
                 # Check if still on line
                 self.__cmdq.append(("isonline", []))
             elif self.__state == CAL_FAILED:
