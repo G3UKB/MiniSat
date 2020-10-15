@@ -146,16 +146,14 @@ class RotIf(threading.Thread):
         Arguments:
             
         """
-        if self.__status == OFFLINE: return True
+        if self.__status == OFFLINE: return False
         # Set speed
-        r, d = self.setAzSpeed(defs.AZ_MOTOR_SPEED)
-        if not r or d == 'nak':
+        if not self.setAzSpeed(defs.AZ_MOTOR_SPEED):
             self.__msgq.append('Failed to set azimuth motor speed!')
             self.__state_callback(CAL_FAILED)
             self.__status = CAL_FAILED
             return False
-        r, d = self.setElSpeed(defs.EL_MOTOR_SPEED)
-        if not r or d == 'nak':
+        if not self.setElSpeed(defs.EL_MOTOR_SPEED):
             self.__msgq.append('Failed to set elevation motor speed!')
             self.__state_callback(CAL_FAILED)
             self.__status = CAL_FAILED
@@ -176,13 +174,11 @@ class RotIf(threading.Thread):
                 return False
         else:
             # Set saved calibration
-            r, d = self.setCalAz(defs.config["Calibration"]["AZ"])
-            if not r or d == 'nak':
+            if not self.setCalAz(defs.config["Calibration"]["AZ"]):
                 self.__state_callback(CAL_FAILED)
                 self.__status = CAL_FAILED
                 return False
-            r, d = self.setCalEl(defs.config["Calibration"]["EL"])
-            if not r or d == 'nak':
+            if not self.setCalEl(defs.config["Calibration"]["EL"]):
                 self.__state_callback(CAL_FAILED)
                 self.__status = CAL_FAILED
                 return False
@@ -222,11 +218,9 @@ class RotIf(threading.Thread):
         r, d = self.__doCommand("poll")
         self.__lock.release()
         if not r or d == 'nak':
-            return False
-        else:
-            # Failed
             self.__state_callback(OFFLINE)
             self.__status = OFFLINE
+            return False
         return True
 
     def getPos(self, args):
@@ -258,7 +252,7 @@ class RotIf(threading.Thread):
         Arguments:
             calibration   -- number of pulses between limits    
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
         r, d = self.__doCommand("%sa" % calibration)
@@ -275,7 +269,7 @@ class RotIf(threading.Thread):
         Arguments:
             calibration   -- number of pulses between limits    
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
         r, d = self.__doCommand("%sb" % calibration)
@@ -291,7 +285,7 @@ class RotIf(threading.Thread):
         Arguments:
             speed   -- as % of full speed    
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
         r, d = self.__doCommand("%sn" % speed)
@@ -307,7 +301,7 @@ class RotIf(threading.Thread):
         Arguments:
             speed   -- as % of full speed    
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
         r, d = self.__doCommand("%sm" % speed)
@@ -364,7 +358,7 @@ class RotIf(threading.Thread):
         Arguments:
                 
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
         r, d = self.__doCommand("homeaz")
@@ -386,7 +380,7 @@ class RotIf(threading.Thread):
         Arguments:
                 
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
         r, d = self.__doCommand("homeel")
@@ -408,8 +402,7 @@ class RotIf(threading.Thread):
         #print("Set pos az ", params)
         if self.__degaz == -1:
             # Don't know where we are so move to home first
-            r, d = self.homeAz()
-            if not r or d == 'nak':
+            if not self.homeAz():
                 return False
             self.__degaz = 0
            
@@ -438,7 +431,7 @@ class RotIf(threading.Thread):
                 return False
             self.__degel = 0
             
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         elevation = params[0]
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
@@ -455,7 +448,7 @@ class RotIf(threading.Thread):
         Arguments:
             
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
         r, d = self.__doCommand("ngazfwd" )
@@ -471,7 +464,7 @@ class RotIf(threading.Thread):
         Arguments:
             
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
         r, d = self.__doCommand("ngazrev" )
@@ -487,7 +480,7 @@ class RotIf(threading.Thread):
         Arguments:
             
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
         r, d = self.__doCommand("ngelfwd" )
@@ -503,7 +496,7 @@ class RotIf(threading.Thread):
         Arguments:
             
         """
-        if self.__status == OFFLINE: return True, 'ack'
+        if self.__status == OFFLINE: return False
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
         r, d = self.__doCommand("ngelrev" )

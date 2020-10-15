@@ -816,7 +816,12 @@ Azimuth and Elevation Controller
         """
         # Empty the message q
         while len(self.__msgq) > 0:
-            self.logOutput.append(self.__msgq.popleft())
+            t = self.__msgq.popleft()
+            if "error" in t.lower():
+                self.logOutput.setTextColor(QColor("red"))
+            else:
+                self.logOutput.setTextColor(QColor("black"))
+            self.logOutput.append(t)
         
         # Empty the event q
         self.__processEventQ()
