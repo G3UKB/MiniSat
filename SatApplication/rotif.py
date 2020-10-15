@@ -187,20 +187,6 @@ class RotIf(threading.Thread):
                 self.__status = CAL_FAILED
                 return False
             
-            # Move to home position
-            """
-            r, d = self.homeAz()
-            if not r or d == 'nak':
-                self.__state_callback(CAL_FAILED)
-                self.__status = CAL_FAILED
-                return False
-            r, d = self.homeEl()
-            if not r or d == 'nak':
-                self.__state_callback(CAL_FAILED)
-                self.__status = CAL_FAILED
-                return False
-            """
-            
         self.__state_callback(ONLINE)
         self.__status = ONLINE
         return True
@@ -214,13 +200,15 @@ class RotIf(threading.Thread):
         """
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("poll")
+        r, d = self.__doCommand("poll")
         self.__lock.release()
-        if r[0]:
+        if not r or d == 'nak':
+            return False
+        else:
             # Success
             self.__state_callback(PENDING)
             self.__status = PENDING
-        return r
+        return True
     
     def isOnLine(self):
         """
@@ -231,13 +219,15 @@ class RotIf(threading.Thread):
         """
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("poll")
+        r, d = self.__doCommand("poll")
         self.__lock.release()
-        if not r[0]:
+        if not r or d == 'nak':
+            return False
+        else:
             # Failed
             self.__state_callback(OFFLINE)
             self.__status = OFFLINE
-        return r
+        return True
 
     def getPos(self, args):
         """
@@ -271,9 +261,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("%sa" % calibration)
+        r, d = self.__doCommand("%sa" % calibration)
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def setCalEl(self, calibration):
         """
@@ -286,9 +278,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("%sb" % calibration)
+        r, d = self.__doCommand("%sb" % calibration)
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def setAzSpeed(self, speed):
         """
@@ -300,9 +294,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("%sn" % speed)
+        r, d = self.__doCommand("%sn" % speed)
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def setElSpeed(self, speed):
         """
@@ -314,9 +310,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.HW_TIMEOUT)
-        r = self.__doCommand("%sm" % speed)
+        r, d = self.__doCommand("%sm" % speed)
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def calibrateAz(self):
         """
@@ -369,11 +367,14 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("homeaz")
-        self.__lock.release()
-        self.__degaz = 0
-        self.__pos_callback('az', 0)
-        return r
+        r, d = self.__doCommand("homeaz")
+        self.__lock.release()   
+        if not r or d == 'nak':
+            return False
+        else:
+            self.__degaz = 0
+            self.__pos_callback('az', 0)
+        return True
 
     def homeEl(self):
         """
@@ -388,11 +389,14 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("homeel")
+        r, d = self.__doCommand("homeel")
         self.__lock.release()
-        self.__degel = 0
-        self.__pos_callback('el', 0)
-        return r
+        if not r or d == 'nak':
+            return False
+        else:
+            self.__degel = 0
+            self.__pos_callback('el', 0)
+        return True
     
     def setPosAz(self, params):
         """
@@ -406,16 +410,18 @@ class RotIf(threading.Thread):
             # Don't know where we are so move to home first
             r, d = self.homeAz()
             if not r or d == 'nak':
-                return (r, d)
+                return False
             self.__degaz = 0
            
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         azimuth = params[0]
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("%sz" % azimuth)
+        r, d = self.__doCommand("%sz" % azimuth)
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def setPosEl(self, params):
         """
@@ -429,16 +435,18 @@ class RotIf(threading.Thread):
             # Don't know where we are so move to home first
             r, d = self.homeEl()
             if not r or d == 'nak':
-                return (r, d)
+                return False
             self.__degel = 0
             
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         elevation = params[0]
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("%se" % elevation)
+        r, d = self.__doCommand("%se" % elevation)
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
 
     def nudgeAzFwd(self):
         """
@@ -450,9 +458,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("ngazfwd" )
+        r, d = self.__doCommand("ngazfwd" )
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def nudgeAzRev(self):
         """
@@ -464,9 +474,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("ngazrev" )
+        r, d = self.__doCommand("ngazrev" )
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def nudgeElFwd(self):
         """
@@ -478,9 +490,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("ngelfwd" )
+        r, d = self.__doCommand("ngelfwd" )
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def nudgeElRev(self):
         """
@@ -492,9 +506,11 @@ class RotIf(threading.Thread):
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         self.__cmdsock.settimeout(defs.MOV_TIMEOUT)
-        r = self.__doCommand("ngelrev" )
+        r, d = self.__doCommand("ngelrev" )
         self.__lock.release()
-        return r
+        if not r or d == 'nak':
+            return False
+        return True
     
     def __doCommand(self, cmd):
         """

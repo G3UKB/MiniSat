@@ -225,11 +225,13 @@ void execute(char *command) {
         break;
       } else if(*p == 'z') {
         // Instructed to move to new azimuth bearing
-        __az_motor->move_to_position(value);
+        if (!__az_motor->move_to_position(value))
+          strcpy(reply_buffer, "nak");
         break;
       } else if(*p == 'e') {
         // Instructed to move to new elevation
-        __el_motor->move_to_position(value);
+        if (!__el_motor->move_to_position(value))
+          strcpy(reply_buffer, "nak");
         break;
       } else {
         // Invalid command
