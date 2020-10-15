@@ -69,8 +69,8 @@ class RotIf(threading.Thread):
         self.__calaz = -1
         self.__calel = -1
         # Last position
-        self.__degaz = 0
-        self.__degel = 0
+        self.__degaz = -1
+        self.__degel = -1
         # Dispatch table
         self.__lookup = {
             "coldstart": self.coldStart,
@@ -402,6 +402,13 @@ class RotIf(threading.Thread):
             azimuth     --  [0] position in degrees 0-360
         """
         #print("Set pos az ", params)
+        if self.__degaz == -1:
+            # Don't know where we are so move to home first
+            r, d = self.homeAz()
+            if not r or d == 'nak':
+                return (r, d)
+            self.__degaz = 0
+           
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         azimuth = params[0]
@@ -418,6 +425,13 @@ class RotIf(threading.Thread):
             params   --  [0] position in degrees 0-90
         """
         #print("Set pos el ", params)
+        if self.__degel == -1:
+            # Don't know where we are so move to home first
+            r, d = self.homeEl()
+            if not r or d == 'nak':
+                return (r, d)
+            self.__degel = 0
+            
         if self.__status == OFFLINE: return True, 'ack'
         self.__lock.acquire()
         elevation = params[0]

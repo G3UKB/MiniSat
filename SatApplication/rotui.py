@@ -385,6 +385,7 @@ class RotUI(QMainWindow):
         nudgegrid.addWidget(nudgefwdlabel, 0, 0)
         self.nudgefwdrb = QRadioButton('')
         nudgegrid.addWidget(self.nudgefwdrb, 0, 1)
+        self.nudgefwdrb.setChecked(True)
         nudgerevlabel = QLabel('Rev')
         nudgegrid.addWidget(nudgerevlabel, 0, 2)
         self.nudgerevrb = QRadioButton('')
