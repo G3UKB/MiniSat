@@ -120,7 +120,10 @@ class RotUI(QMainWindow):
                 arduino = config['ARDUINO']
                 defs.HW_RQST_IP = arduino['RQST_IP']
                 defs.HW_RQST_PORT = config.getint('ARDUINO', 'RQST_PORT')
-                defs.HW_LOCAL_IP = arduino['LOCAL_IP']
+                if len(arduino['LOCAL_IP']) == 0 and platform.system().lower() == 'linux':
+                    defs.HW_LOCAL_IP = self.__get_ip()
+                else:
+                    defs.HW_LOCAL_IP = arduino['LOCAL_IP']
                 defs.HW_EVNT_PORT = config.getint('ARDUINO', 'EVNT_PORT')
                 defs.HW_TIMEOUT = config.getint('ARDUINO', 'HW_TIMEOUT')
                 defs.SAT_TIMEOUT = config.getint('ARDUINO', 'SAT_TIMEOUT')
@@ -147,7 +150,21 @@ class RotUI(QMainWindow):
                 print('No CAT section in settings, using defaults!')
         except Exception as e:
             print("Settings exception! [%s]" % str(e))
-            
+    
+    # Return
+    def __get_ip(self):
+        """ Return our ip address """
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            IP = s.getsockname()[0]
+        except Exception:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+
     #========================================================================================
     # Run application here
     def run(self, ):
