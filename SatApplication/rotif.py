@@ -435,8 +435,7 @@ class RotIf(threading.Thread):
         #print("Set pos el ", params)
         if self.__degel == -1:
             # Don't know where we are so move to home first
-            r, d = self.homeEl()
-            if not r or d == 'nak':
+            if not self.homeEl():
                 return False
             self.__degel = 0
             
