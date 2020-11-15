@@ -106,6 +106,7 @@ class RotUI(QMainWindow):
         self.__state = OFFLINE
         self.__lastState = OFFLINE
         self.__ping_timer = 0
+        self.__waitingMsg = False
         
         # Inhibit UI events
         self.__inhibit = False
@@ -834,14 +835,20 @@ Azimuth and Elevation Controller
         # Empty the message q
         while len(self.__msgq) > 0:
             t = self.__msgq.popleft()
-            if "error" in t.lower():
-                self.logOutput.setTextColor(QColor("red"))
-            elif "info" in t.lower():
-                self.logOutput.setTextColor(QColor("green"))
+            if self.__state == ONLINE:
+                if "error" in t.lower():
+                    self.logOutput.setTextColor(QColor("red"))
+                elif "info" in t.lower():
+                    self.logOutput.setTextColor(QColor("green"))
+                else:
+                    self.logOutput.setTextColor(QColor("black"))
+                self.logOutput.append(t)
             else:
-                self.logOutput.setTextColor(QColor("black"))
-            self.logOutput.append(t)
-        
+                if not self.__waitingMsg:
+                    self.logOutput.setTextColor(QColor("green"))
+                    self.logOutput.append("Waiting for controller to come on-line...")
+                    self.__waitingMsg = True
+                
         # Empty the event q
         self.__processEventQ()
         
@@ -1039,7 +1046,7 @@ For initial testing use the nudge buttons to verify operation of the motors in t
                 self.calInd.setStyleSheet('background-color: rgb(199,94,44)')
             elif self.__state == ONLINE:
                 if self.__lastState != ONLINE:
-                    self.__msgq.append('Calibration successful, controller online.')
+                    self.__msgq.append('Calibration successful, controller online')
                     self.contInd.setStyleSheet('background-color: green')
                     self.calInd.setStyleSheet('background-color: green')
                     if  not self.__rotif.isPos():

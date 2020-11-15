@@ -95,7 +95,7 @@ class RotIf(threading.Thread):
         # Current status
         self.__status = OFFLINE
         
-        self.__msgq.append('HW interface initialised.')
+        self.__msgq.append('HW interface initialised')
     
     def terminate(self):
         """
@@ -124,7 +124,7 @@ class RotIf(threading.Thread):
             
         """
         # Loop until terminated by the user
-        self.__msgq.append( 'Rotator Interface running.')
+        self.__msgq.append( 'Rotator Interface running')
         while not self.__terminate:
             # Process commsnd queue
             while len(self.__cmdq) > 0:

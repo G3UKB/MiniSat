@@ -93,15 +93,15 @@ class CAT:
 			try:
 				# List the serial ports again as we can't do this after we open.
 				self.__ports = self.__list_serial_ports()
-				print(self.__ports)
 				self.__device = serial.Serial(port=self.__com, baudrate=self.__baud, parity=self.__command_set[SERIAL][PARITY], stopbits=self.__command_set[SERIAL][STOP_BITS], timeout=self.__command_set[SERIAL][TIMEOUT])
 				self.__port_open = True
+				self.__msgq.append("Opened port %s" % self.__com)
 				# Create and start the CAT thread
 				self.__cat_thrd = CATThrd(self.__rig, self.__command_set, self.__device, self.__catq, self.__msgq)
 				self.__cat_thrd.start()
 			except (OSError, serial.SerialException):
 				# Failed to open the port, radio device probably still off
-				self.__msgq.append('Failed to open COM port %s for CAT! Retry when rig toggled.' % (self.__com))
+				self.__msgq.append('Failed to open COM port %s for CAT! Available ports are %s.' % (self.__com, self.__ports))
 				return False
 			
 		return True
