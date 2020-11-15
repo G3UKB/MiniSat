@@ -835,20 +835,25 @@ Azimuth and Elevation Controller
         # Empty the message q
         while len(self.__msgq) > 0:
             t = self.__msgq.popleft()
-            if self.__state == ONLINE:
-                if "error" in t.lower():
-                    self.logOutput.setTextColor(QColor("red"))
-                elif "info" in t.lower():
+            if "error" in t.lower():
+                if self.__state == ONLINE:
+                    # Output error messages only if online
+                    if "error" in t.lower():
+                        self.logOutput.setTextColor(QColor("red"))
+                else:
+                    # Offline
+                    if not self.__waitingMsg:
+                        self.logOutput.setTextColor(QColor("green"))
+                        self.logOutput.append("Waiting for controller to come on-line...")
+                        self.__waitingMsg = True
+            
+            else:
+                if "info" in t.lower():
                     self.logOutput.setTextColor(QColor("green"))
                 else:
                     self.logOutput.setTextColor(QColor("black"))
                 self.logOutput.append(t)
-            else:
-                if not self.__waitingMsg:
-                    self.logOutput.setTextColor(QColor("green"))
-                    self.logOutput.append("Waiting for controller to come on-line...")
-                    self.__waitingMsg = True
-                
+            
         # Empty the event q
         self.__processEventQ()
         
